@@ -1,0 +1,110 @@
+{
+  "package_version": "1.0.1",
+  "verified_on": "2026-11-18",
+  "python": "3.13.12",
+  "pillow": "12.2.0",
+  "self_tests": {
+    "passed": 30,
+    "failed": 0,
+    "log": "self-test.log"
+  },
+  "skill_structure": "passed",
+  "fixtures": "Procedural non-private scene and printed original test text only. No real handwriting or external literature validated.",
+  "layout_runs": {
+    "vertical": {
+      "automatic_pass": true,
+      "visual_review_pass": true,
+      "delivery_ready": true,
+      "engine_version": "1.0.0",
+      "runtime_pillow": "12.2.0",
+      "render_pillow": "12.2.0",
+      "pixel_checks": {
+        "photo_total_pixels": 1152000,
+        "base_reassembled_different_pixels": 0,
+        "visible_photo_pixels_checked": 1152000,
+        "visible_photo_different_pixels": 0,
+        "covered_photo_pixels": 0,
+        "text_check": "geometry_only; visual review required; no OCR performed"
+      },
+      "limits": [
+        "自动检查仅证明文件、几何和合成像素；文字语义/漏标范围/辨识度须目视复核。",
+        "覆盖区域的扁平合成像素发生变化；photo-native.png 和 photo-base.png 保留完整照片底层。"
+      ],
+      "review_sha256": "00dd169fe91b550b4b1a5c5e05f67c4092c7443358d23d0808248f4a3208d166"
+    },
+    "horizontal": {
+      "automatic_pass": true,
+      "visual_review_pass": true,
+      "delivery_ready": true,
+      "engine_version": "1.0.0",
+      "runtime_pillow": "12.2.0",
+      "render_pillow": "12.2.0",
+      "pixel_checks": {
+        "photo_total_pixels": 1152000,
+        "base_reassembled_different_pixels": 0,
+        "visible_photo_pixels_checked": 1152000,
+        "visible_photo_different_pixels": 0,
+        "covered_photo_pixels": 0,
+        "text_check": "geometry_only; visual review required; no OCR performed"
+      },
+      "limits": [
+        "自动检查仅证明文件、几何和合成像素；文字语义/漏标范围/辨识度须目视复核。",
+        "覆盖区域的扁平合成像素发生变化；photo-native.png 和 photo-base.png 保留完整照片底层。"
+      ],
+      "review_sha256": "00dd169fe91b550b4b1a5c5e05f67c4092c7443358d23d0808248f4a3208d166"
+    },
+    "triptych": {
+      "automatic_pass": true,
+      "visual_review_pass": true,
+      "delivery_ready": true,
+      "engine_version": "1.0.0",
+      "runtime_pillow": "12.2.0",
+      "render_pillow": "12.2.0",
+      "pixel_checks": {
+        "photo_total_pixels": 1152000,
+        "base_reassembled_different_pixels": 0,
+        "visible_photo_pixels_checked": 1152000,
+        "visible_photo_different_pixels": 0,
+        "covered_photo_pixels": 0,
+        "text_check": "geometry_only; visual review required; no OCR performed"
+      },
+      "limits": [
+        "自动检查仅证明文件、几何和合成像素；文字语义/漏标范围/辨识度须目视复核。",
+        "覆盖区域的扁平合成像素发生变化；photo-native.png 和 photo-base.png 保留完整照片底层。"
+      ],
+      "review_sha256": "00dd169fe91b550b4b1a5c5e05f67c4092c7443358d23d0808248f4a3208d166"
+    },
+    "overlay": {
+      "automatic_pass": true,
+      "visual_review_pass": true,
+      "delivery_ready": true,
+      "engine_version": "1.0.0",
+      "runtime_pillow": "12.2.0",
+      "render_pillow": "12.2.0",
+      "pixel_checks": {
+        "photo_total_pixels": 1152000,
+        "base_reassembled_different_pixels": 0,
+        "visible_photo_pixels_checked": 956570,
+        "visible_photo_different_pixels": 0,
+        "covered_photo_pixels": 195430,
+        "text_check": "geometry_only; visual review required; no OCR performed"
+      },
+      "limits": [
+        "自动检查仅证明文件、几何和合成像素；文字语义/漏标范围/辨识度须目视复核。",
+        "覆盖区域的扁平合成像素发生变化；photo-native.png 和 photo-base.png 保留完整照片底层。"
+      ],
+      "review_sha256": "00dd169fe91b550b4b1a5c5e05f67c4092c7443358d23d0808248f4a3208d166"
+    }
+  },
+  "portable_extraction_check": {
+    "passed": true,
+    "tests": [
+      "ZIP CRC",
+      "extract into independent directory",
+      "compose bundled recipe with relative assets",
+      "verify output in Unicode directory",
+      "strict review gate remains pending for new output"
+    ],
+    "absolute_workspace_dependency": false
+  }
+}

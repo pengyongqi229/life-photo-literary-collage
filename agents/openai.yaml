@@ -1,0 +1,4 @@
+interface:
+  display_name: "生活照＋文学手抄"
+  short_description: "用调用者自带照片和完整真实手抄做克制拼接，保留照片像素并逐项核对文字、署名和纸张"
+  default_prompt: "使用 $life-photo-literary-collage，为我自带的生活照匹配真实手抄素材，完成合成、像素校验和逐字复核。"

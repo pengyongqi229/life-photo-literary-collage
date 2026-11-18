@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "photo": {
+    "image": "photos/photo.jpg",
+    "protected_regions": []
+  },
+  "paper": {
+    "image": "handcopies/page.png",
+    "asset_kind": "real-handcopy",
+    "expected_transcript": "在此逐行录入原稿的完整文字、所有标点与署名；不能直接使用本模板的示意文字。",
+    "regions": [
+      {"kind": "text", "box": [60, 50, 1300, 600]},
+      {"kind": "signature", "box": [950, 640, 1300, 730]}
+    ],
+    "smallest_character_px": 32,
+    "minimum_character_px": 12,
+    "allow_upscale": false,
+    "rights": {
+      "basis": "permission",
+      "evidence": "使用前替换为已核实的文本、作者/作品、手抄图像使用依据；本模板不构成授权。",
+      "record_file": "catalog.json"
+    }
+  },
+  "layout": {"type": "vertical", "paper_side": "after", "panel_size": 620, "margin": 24, "gap": 0},
+  "background": [240, 235, 221]
+}

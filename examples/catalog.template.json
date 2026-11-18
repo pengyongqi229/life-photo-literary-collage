@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "note": "这是字段示意，请替换为调用者自己的真实、完整、已核实记录。索引不被合成引擎自动读取。",
+  "items": [
+    {
+      "id": "caller-defined-id",
+      "image": "handcopies/page.png",
+      "moods": ["按真实文字和照片填写"],
+      "full_transcript": "完整正文、标点、换行及原署名",
+      "literary_author": "经原作核实后填写",
+      "work": "原作与版本",
+      "translator": null,
+      "handwriter": "实际书写者；不自动等于文学作者",
+      "source": {"url_or_bibliography": "可靠直接链接或书名、出版社、版次、页码", "verified_on": "YYYY-MM-DD", "matches_original": false},
+      "rights": {
+        "text": {"basis": "需核实", "evidence": "实际证据", "territory_and_use": "实际地域及用途"},
+        "translation": null,
+        "handwriting_image": {"basis": "需核实", "evidence": "实际证据", "territory_and_use": "实际地域及用途"}
+      }
+    }
+  ]
+}

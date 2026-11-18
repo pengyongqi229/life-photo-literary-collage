@@ -1,0 +1,35 @@
+test_caller_unicode_paths (__main__.CollageTests.test_caller_unicode_paths) ... ok
+test_cli_failure_removes_stale_success_report (__main__.CollageTests.test_cli_failure_removes_stale_success_report) ... ok
+test_cli_manual_pending_reports_automatic_pass (__main__.CollageTests.test_cli_manual_pending_reports_automatic_pass) ... ok
+test_detect_changed_output_icc_even_with_updated_hash (__main__.CollageTests.test_detect_changed_output_icc_even_with_updated_hash) ... ok
+test_detect_final_tampering_even_with_updated_hash (__main__.CollageTests.test_detect_final_tampering_even_with_updated_hash) ... ok
+test_detect_inflated_mask_even_with_updated_hash (__main__.CollageTests.test_detect_inflated_mask_even_with_updated_hash) ... ok
+test_detect_source_change (__main__.CollageTests.test_detect_source_change) ... ok
+test_exif_orientation_is_lossless_permutation (__main__.CollageTests.test_exif_orientation_is_lossless_permutation) ... ok
+test_four_layouts_preserve_photo (__main__.CollageTests.test_four_layouts_preserve_photo) ... ok
+test_horizontal_after (__main__.CollageTests.test_horizontal_after) ... ok
+test_manual_review_required (__main__.CollageTests.test_manual_review_required) ... ok
+test_output_strips_exif_but_keeps_photo_pixels (__main__.CollageTests.test_output_strips_exif_but_keeps_photo_pixels) ... ok
+test_real_source_holes_preserved (__main__.CollageTests.test_real_source_holes_preserved) ... ok
+test_reject_clipped_page_container (__main__.CollageTests.test_reject_clipped_page_container) ... ok
+test_reject_cmyk_photo (__main__.CollageTests.test_reject_cmyk_photo) ... ok
+test_reject_different_embedded_icc (__main__.CollageTests.test_reject_different_embedded_icc) ... ok
+test_reject_missing_signature (__main__.CollageTests.test_reject_missing_signature) ... ok
+test_reject_no_rights_evidence (__main__.CollageTests.test_reject_no_rights_evidence) ... ok
+test_reject_out_of_bounds_text (__main__.CollageTests.test_reject_out_of_bounds_text) ... ok
+test_reject_overwriting_output (__main__.CollageTests.test_reject_overwriting_output) ... ok
+test_reject_path_traversal (__main__.CollageTests.test_reject_path_traversal) ... ok
+test_reject_protected_subject_overlap (__main__.CollageTests.test_reject_protected_subject_overlap) ... ok
+test_reject_split_through_subject (__main__.CollageTests.test_reject_split_through_subject) ... ok
+test_reject_symlink_escape (__main__.CollageTests.test_reject_symlink_escape) ... ok
+test_reject_tiny_characters (__main__.CollageTests.test_reject_tiny_characters) ... ok
+test_reject_transparent_photo (__main__.CollageTests.test_reject_transparent_photo) ... ok
+test_rgba_difference_detects_rgb_change_with_same_alpha (__main__.CollageTests.test_rgba_difference_detects_rgb_change_with_same_alpha) ... ok
+test_source_bytes_unchanged (__main__.CollageTests.test_source_bytes_unchanged) ... ok
+test_triptych_y_reassembles (__main__.CollageTests.test_triptych_y_reassembles) ... ok
+test_vertical_before (__main__.CollageTests.test_vertical_before) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 10.943s
+
+OK

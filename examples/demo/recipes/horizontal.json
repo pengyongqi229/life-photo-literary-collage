@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "photo": {
+    "image": "photos/scene.png",
+    "protected_regions": [
+      [
+        780,
+        140,
+        1270,
+        770
+      ]
+    ]
+  },
+  "paper": {
+    "image": "handcopies/portrait.png",
+    "asset_kind": "synthetic-test",
+    "expected_transcript": "A quiet afternoon.\nLight rests here;\nthe day goes on.\n- Test author\nTEST PAGE ONLY\nNOT HANDWRITING",
+    "regions": [
+      {
+        "kind": "text",
+        "box": [
+          26,
+          185,
+          395,
+          365
+        ]
+      },
+      {
+        "kind": "signature",
+        "box": [
+          96,
+          440,
+          390,
+          495
+        ]
+      },
+      {
+        "kind": "text",
+        "box": [
+          22,
+          650,
+          402,
+          745
+        ]
+      }
+    ],
+    "smallest_character_px": 18,
+    "minimum_character_px": 12,
+    "allow_upscale": false,
+    "rights": {
+      "basis": "synthetic-test",
+      "evidence": "Original procedural test drawings and original test sentences; no external quotation, personal image or real handwriting."
+    }
+  },
+  "background": [
+    239,
+    230,
+    208
+  ],
+  "layout": {
+    "type": "horizontal",
+    "panel_size": 440,
+    "margin": 22,
+    "gap": 0,
+    "paper_side": "before"
+  }
+}
