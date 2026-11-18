@@ -1,19 +1,27 @@
 test_caller_unicode_paths (__main__.CollageTests.test_caller_unicode_paths) ... ok
 test_cli_failure_removes_stale_success_report (__main__.CollageTests.test_cli_failure_removes_stale_success_report) ... ok
 test_cli_manual_pending_reports_automatic_pass (__main__.CollageTests.test_cli_manual_pending_reports_automatic_pass) ... ok
+test_default_look_is_gentle_and_keeps_yellow_blue_separation (__main__.CollageTests.test_default_look_is_gentle_and_keeps_yellow_blue_separation) ... ok
+test_default_look_preserves_native_and_records_changed_colors (__main__.CollageTests.test_default_look_preserves_native_and_records_changed_colors) ... ok
 test_detect_changed_output_icc_even_with_updated_hash (__main__.CollageTests.test_detect_changed_output_icc_even_with_updated_hash) ... ok
 test_detect_final_tampering_even_with_updated_hash (__main__.CollageTests.test_detect_final_tampering_even_with_updated_hash) ... ok
+test_detect_forged_look_record (__main__.CollageTests.test_detect_forged_look_record) ... ok
+test_detect_graded_layer_tampering_with_updated_hash (__main__.CollageTests.test_detect_graded_layer_tampering_with_updated_hash) ... ok
 test_detect_inflated_mask_even_with_updated_hash (__main__.CollageTests.test_detect_inflated_mask_even_with_updated_hash) ... ok
 test_detect_source_change (__main__.CollageTests.test_detect_source_change) ... ok
+test_disable_look_is_exact_for_all_layouts (__main__.CollageTests.test_disable_look_is_exact_for_all_layouts) ... ok
 test_exif_orientation_is_lossless_permutation (__main__.CollageTests.test_exif_orientation_is_lossless_permutation) ... ok
 test_four_layouts_preserve_photo (__main__.CollageTests.test_four_layouts_preserve_photo) ... ok
+test_grain_is_seeded_and_monochrome (__main__.CollageTests.test_grain_is_seeded_and_monochrome) ... ok
 test_horizontal_after (__main__.CollageTests.test_horizontal_after) ... ok
+test_look_does_not_touch_paper_layer (__main__.CollageTests.test_look_does_not_touch_paper_layer) ... ok
 test_manual_review_required (__main__.CollageTests.test_manual_review_required) ... ok
 test_output_strips_exif_but_keeps_photo_pixels (__main__.CollageTests.test_output_strips_exif_but_keeps_photo_pixels) ... ok
 test_real_source_holes_preserved (__main__.CollageTests.test_real_source_holes_preserved) ... ok
 test_reject_clipped_page_container (__main__.CollageTests.test_reject_clipped_page_container) ... ok
 test_reject_cmyk_photo (__main__.CollageTests.test_reject_cmyk_photo) ... ok
 test_reject_different_embedded_icc (__main__.CollageTests.test_reject_different_embedded_icc) ... ok
+test_reject_invalid_look_parameters (__main__.CollageTests.test_reject_invalid_look_parameters) ... ok
 test_reject_missing_signature (__main__.CollageTests.test_reject_missing_signature) ... ok
 test_reject_no_rights_evidence (__main__.CollageTests.test_reject_no_rights_evidence) ... ok
 test_reject_out_of_bounds_text (__main__.CollageTests.test_reject_out_of_bounds_text) ... ok
@@ -28,8 +36,9 @@ test_rgba_difference_detects_rgb_change_with_same_alpha (__main__.CollageTests.t
 test_source_bytes_unchanged (__main__.CollageTests.test_source_bytes_unchanged) ... ok
 test_triptych_y_reassembles (__main__.CollageTests.test_triptych_y_reassembles) ... ok
 test_vertical_before (__main__.CollageTests.test_vertical_before) ... ok
+test_zero_strength_is_identity (__main__.CollageTests.test_zero_strength_is_identity) ... ok
 
 ----------------------------------------------------------------------
-Ran 30 tests in 10.943s
+Ran 39 tests in 21.705s
 
 OK

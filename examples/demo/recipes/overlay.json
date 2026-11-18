@@ -9,7 +9,13 @@
         1270,
         770
       ]
-    ]
+    ],
+    "look": {
+      "preset": "japanese-film",
+      "strength": 0.45,
+      "grain": 0.35,
+      "seed": 1729
+    }
   },
   "paper": {
     "image": "handcopies/landscape.png",

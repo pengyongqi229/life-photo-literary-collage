@@ -7,15 +7,17 @@ import math
 from pathlib import Path
 
 from PIL import Image, ImageChops, ImageOps, __version__ as PILLOW_VERSION
+from photo_look import apply_photo_look
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 MAX_PIXELS = 40_000_000
-ARTIFACTS = ("final.png", "photo-native.png", "photo-base.png",
+ARTIFACTS = ("final.png", "photo-native.png", "photo-graded.png", "photo-base.png",
              "paper-layer.png", "coverage-mask.png")
 REVIEW_FIELDS = (
     "full_text_and_punctuation", "signature", "source_page_complete",
     "paper_texture_and_edges", "legibility", "subject_unobstructed",
     "mood_and_layout", "attribution_and_rights",
+    "photo_look_natural",
 )
 
 
@@ -151,7 +153,11 @@ def build(config, assets):
     photo, icc, photo_meta = load_source(photo_path, "photo")
     paper, paper_icc, paper_meta = load_source(paper_path, "paper")
     require(not (icc and paper_icc and icc != paper_icc),
-            "两张素材的 ICC 配置不同。请先准备色彩空间相容的手抄素材，生活照不得转换色彩。")
+            "两张素材的 ICC 配置不同。请先准备色彩空间相容的手抄素材，生活照不得自动转换色域。")
+    native_photo = photo
+    photo, processing = apply_photo_look(native_photo, photo_cfg.get("look"))
+    processing["native_pixel_sha256"] = sha_pixels(native_photo)
+    processing["graded_pixel_sha256"] = sha_pixels(photo)
     transcript = paper_cfg.get("expected_transcript")
     require(isinstance(transcript, str) and transcript.strip(), "必须记录完整原文、标点和署名 expected_transcript。")
     require(paper_cfg.get("asset_kind") in ("real-handcopy", "synthetic-test"),
@@ -257,14 +263,14 @@ def build(config, assets):
                   px + math.ceil(box[2] * sx), py + math.ceil(box[3] * sy)]
         check_box(mapped, canvas_size, "mapped text region")
         mapped_regions.append({"kind": region["kind"], "source_box": list(box), "output_box": mapped})
-    images = {"final.png": final, "photo-native.png": photo, "photo-base.png": base,
+    images = {"final.png": final, "photo-native.png": native_photo, "photo-graded.png": photo, "photo-base.png": base,
               "paper-layer.png": layer, "coverage-mask.png": coverage}
     geometry = {"canvas_size": list(canvas_size), "paper_box": [px, py, px + page_layer.width, py + page_layer.height],
                 "paper_scale": [sx, sy], "effective_smallest_character_px": smallest * scale,
                 "regions": mapped_regions,
                 "photo_tiles": [{"source_box": list(box), "destination": list(xy)} for box, xy in tiles]}
     metadata = {"photo": photo_meta, "paper": paper_meta}
-    return images, geometry, metadata, icc
+    return images, geometry, metadata, icc, processing
 
 
 def load_output_png(path, mode):
@@ -274,7 +280,8 @@ def load_output_png(path, mode):
 
 
 def check_pixels(images, geometry):
-    final, base, photo = (images[key] for key in ("final.png", "photo-base.png", "photo-native.png"))
+    final, base, photo = (images[key] for key in ("final.png", "photo-base.png", "photo-graded.png"))
+    native = images["photo-native.png"]
     mask = images["coverage-mask.png"]
     # Verify every photo sample appears once in the base and reassembles exactly.
     restored = Image.new("RGBA", photo.size, (0, 0, 0, 0))
@@ -300,9 +307,11 @@ def check_pixels(images, geometry):
         photo_changed += sum(outside.histogram()[1:])
     require(coverage.getextrema() == (255, 255), "照片有未放置的像素。")
     restored_diff = difference_pixels(restored, photo)
-    require(restored_diff == 0, "照片底层无法逐像素还原。")
-    require(photo_changed == 0, "覆盖范围以外的照片像素发生变化。")
+    require(restored_diff == 0, "画布底层无法逐像素还原为 photo-graded.png。")
+    require(photo_changed == 0, "覆盖范围以外的照片像素与 photo-graded.png 不一致。")
     return {"photo_total_pixels": photo.width * photo.height,
+            "comparison_baseline": "photo-graded.png",
+            "native_to_graded_different_pixels": difference_pixels(native, photo),
             "base_reassembled_different_pixels": restored_diff,
             "visible_photo_pixels_checked": visible_checked,
             "visible_photo_different_pixels": photo_changed,
@@ -319,9 +328,10 @@ def verify_bundle(out, assets, review_path=None, require_review=False):
     out = Path(out)
     manifest = read_json(out / "manifest.json")
     require(manifest.get("engine_version") == VERSION, "引擎版本不一致，请用生成该包的版本验证。")
-    expected, geometry, source_meta, expected_icc = build(manifest["recipe"], assets)
+    expected, geometry, source_meta, expected_icc, processing = build(manifest["recipe"], assets)
     require(manifest["sources"] == source_meta, "源文件或解码结果与生成时不同。")
     require(manifest["geometry"] == geometry, "记录的布局与重算结果不一致。")
+    require(manifest["photo_processing"] == processing, "调色记录与从原照重算的结果不一致。")
     actual = {}
     for name in ARTIFACTS:
         path = out / name
@@ -341,8 +351,10 @@ def verify_bundle(out, assets, review_path=None, require_review=False):
               "delivery_ready": approved, "engine_version": VERSION,
               "runtime_pillow": PILLOW_VERSION, "render_pillow": manifest["pillow_version"],
               "pixel_checks": pixels,
+              "photo_processing": processing,
               "limits": ["自动检查仅证明文件、几何和合成像素；文字语义/漏标范围/辨识度须目视复核。",
-                         "覆盖区域的扁平合成像素发生变化；photo-native.png 和 photo-base.png 保留完整照片底层。"],
+                         "调色会改变 RGB；photo-native.png 保留未调色原照，photo-graded.png 是合成校验基准。",
+                         "叠纸区的扁平合成像素会变化；覆盖区外必须与调色底图零差异。"],
               "review_sha256": sha_file(review_path) if review_path.exists() else None}
     write_json(out / "verification.json", report)
     require(not require_review or approved, "自动像素检查通过，但目视/出处版权复核未全部确认；不可标作最终交付。")
@@ -354,7 +366,7 @@ def render(config, assets, out):
     root = Path(assets).resolve()
     # Validate and render in memory before creating a new directory. Never overwrite an existing bundle.
     require(not out.exists(), "输出目录已存在；请使用新的目录，避免覆盖素材或前次成品。")
-    images, geometry, metadata, icc = build(config, root)
+    images, geometry, metadata, icc, processing = build(config, root)
     check_pixels(images, geometry)
     out.mkdir(parents=True)
     for name, im in images.items():
@@ -363,8 +375,9 @@ def render(config, assets, out):
         encoded.info.clear()  # retain source ICC explicitly; do not copy EXIF/GPS to outputs
         encoded.save(out / name, format="PNG", **kwargs)
     manifest = {"engine_version": VERSION, "pillow_version": PILLOW_VERSION,
-                "normalization": "EXIF orientation permutation + decode to 8-bit RGBA; no color transform",
+                "normalization": "Source EXIF permutation + decode RGBA; photo_processing is recorded separately",
                 "recipe": config, "sources": metadata, "geometry": geometry,
+                "photo_processing": processing,
                 "artifact_sha256": {name: sha_file(out / name) for name in ARTIFACTS}}
     write_json(out / "manifest.json", manifest)
     write_json(out / "review.json", review_template())

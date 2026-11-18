@@ -1,10 +1,10 @@
 # 生活照＋文学手抄 Skill
 
-可移植的本地合成流程。包含 Skill 指令、四种布局的 Pillow 引擎、独立重算校验、使用示例和自测。无需 API Key、图像生成模型或网络服务；**查证外部文学出处/版权**时由执行者使用可用的检索渠道。
+可移植的本地合成流程。包含 Skill 指令、轻微日系胶片调色、四种布局的 Pillow 引擎、独立重算校验、使用示例和自测。无需 API Key、图像生成模型或网络服务；**查证外部文学出处/版权**时由执行者使用可用的检索渠道。
 
 本项目不附带任何私人照片或真实手抄图库，使用者自带素材。示例图完全由脚本绘制，标为测试图，不是真实生活照、真实手抄或文学摘句。包内测试图不是审美参考图库。
 
-[下载完整安装包 ZIP](https://github.com/pengyongqi229/life-photo-literary-collage/archive/refs/tags/v1.0.1.zip) · [查看发布版本](https://github.com/pengyongqi229/life-photo-literary-collage/releases) · [四种布局测试预览](examples/layout-preview.png)
+[下载完整安装包 ZIP](https://github.com/pengyongqi229/life-photo-literary-collage/archive/refs/tags/v1.1.0.zip) · [查看发布版本](https://github.com/pengyongqi229/life-photo-literary-collage/releases) · [四种布局测试预览](examples/layout-preview.png)
 
 ## 从 GitHub 安装
 
@@ -36,6 +36,19 @@ python3 -m venv .venv
 Windows 对应使用 `py -3 -m venv .venv` 和 `.venv\Scripts\python.exe -m pip install -r requirements.txt`。后续的 `python` 均指此环境的解释器；也可先激活环境再执行。
 
 在其他支持目录式 Skill 的 Agent 中，把整个文件夹放入其技能目录；不支持 Skill 发现时可直接读 `SKILL.md` 并运行脚本。工具不依赖 Codex 专用 API。
+
+## 默认的轻微胶片调色
+
+默认只对生活照副本做微暖、柔和对比、轻收饱和、轻抬暗部及极淡单色颗粒，保留人物、构图、原尺寸和原有色彩关系。真实手抄不跟着调色。配方示例：
+
+```json
+"photo": {
+  "image": "photos/photo.jpg",
+  "look": {"preset": "japanese-film", "strength": 0.45, "grain": 0.35, "seed": 1729}
+}
+```
+
+需要完全不改原像素时，将 `look` 改为 `{"preset": "none"}`。调色必然改变颜色像素，因此同时提供未调色原照、调色底图与合成验证记录。细则见 [调色说明](references/photo-look.md)。
 
 ## 先跑一个无需私人素材的示例
 
@@ -74,7 +87,7 @@ recipe.json
 
 对 Agent 的示例请求：
 
-> 使用 $life-photo-literary-collage。素材目录是我提供的目录，生活照在 photos/photo.jpg，手抄在 handcopies/。先按照片情绪选一张完整真实手抄，保留所有字、标点、署名和纸纹。请自主选择克制布局，不加印章票根，核对原像素和逐字完整性，最终只展示一张 PNG。
+> 使用 $life-photo-literary-collage。素材目录是我提供的目录，生活照在 photos/photo.jpg，手抄在 handcopies/。先按照片情绪选一张完整真实手抄，保留所有字、标点、署名和纸纹。请自主选择克制布局，不加印章票根，默认做轻微日系胶片调色，保留未调色原照，核对调色底图与合成像素及文字完整性，最终只展示一张 PNG。
 
 ```bash
 python /path/to/life-photo-literary-collage/scripts/compose.py recipe.json --assets /path/to/my-materials --out result-v1
@@ -89,16 +102,17 @@ python /path/to/life-photo-literary-collage/scripts/verify.py result-v1 --assets
 | --- | --- |
 | `final.png` | 无损 RGBA PNG 合成图 |
 | `photo-native.png` | EXIF 显示方向、原尺寸、完整未改像素的照片底层 |
-| `photo-base.png` | 画布中的原照底层，穿页布局的像素可无损重组 |
+| `photo-graded.png` | 原尺寸完整调色照片；关闭调色时与原照像素一致 |
+| `photo-base.png` | 画布中的调色照片底层，穿页布局可完整重组 |
 | `paper-layer.png` | 整张纸的 RGBA 合成层，可还原覆盖范围 |
 | `coverage-mask.png` | 从真实纸层 alpha 导出的二值覆盖遮罩，不是随意指定的免责区域 |
-| `manifest.json` | 配方、相对路径、尺寸、源哈希、像素哈希、布局和运行版本 |
+| `manifest.json` | 配方、调色参数/种子/实际差异、相对路径、源哈希、像素哈希、布局和版本 |
 | `review.json` | 必须由执行者对照原素材填写的目视/出处版权检查 |
 | `verification.json` | 自动检查和目视记录状态 |
 
 验证器用调用者原素材重新生成预期图片，逐像素比较所有输出，并重组照片检查完整覆盖。即使篡改遮罩再更新文件哈希，也不能通过重算像素检查。它不能证明人为填写的配方、转录或复核内容真实，也不提供数字签名防伪。
 
-“原像素”指原文件解码并依 EXIF 方向排列的 8 位 RGBA 采样值：不会缩放照片、做色彩转换或重编码 JPEG。源文件字节保持不变，并记录 SHA-256。分栏/穿页版中的全部照片像素不变；叠纸版的覆盖区在扁平图中改变，完整底层仍逐像素保留。
+“原像素”指原文件解码并依 EXIF 方向排列的 8 位 RGBA 采样值。源文件字节不变，`photo-native.png` 保留完整未调色采样。默认的轻微胶片调色会改变 RGB，结果另存 `photo-graded.png`，不重绘、不改构图或尺寸。合成与穿页重组以调色图为基准，叠纸覆盖区外必须零差异；不能将这个零差异说成与未调色原照零差异。显式关闭调色后，调色图也与原照逐像素一致。
 
 输出只显式保留照片的 ICC 色彩配置，不复制源文件的 EXIF/GPS 元数据；这不改变像素值，也不修改源文件。
 
@@ -110,4 +124,4 @@ python /path/to/life-photo-literary-collage/scripts/verify.py result-v1 --assets
 
 分享安装包时只包含 Skill 指令、脚本、模板和非私人测试素材。不要把自己的 `my-materials`、成品、`.venv`、缓存、API Key 或真实文学扫描件一起打包。包内代码和文档按 [LICENSE](LICENSE) 授权；不授予任何调用者输入素材、文学文本、译文或手抄图像的权利。
 
-详细规则：[选文与出处](references/editorial.md) · [布局与字段](references/layouts-and-config.md) · [质量检查](references/quality.md)。
+详细规则：[轻微胶片调色](references/photo-look.md) · [选文与出处](references/editorial.md) · [布局与字段](references/layouts-and-config.md) · [质量检查](references/quality.md)。

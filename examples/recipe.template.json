@@ -2,7 +2,8 @@
   "schema_version": 1,
   "photo": {
     "image": "photos/photo.jpg",
-    "protected_regions": []
+    "protected_regions": [],
+    "look": {"preset": "japanese-film", "strength": 0.45, "grain": 0.35, "seed": 1729}
   },
   "paper": {
     "image": "handcopies/page.png",

@@ -1,21 +1,18 @@
-# 1.0.1 验证记录
+# 1.1.0 验证记录
 
-验证日期：2026-11-18。环境：Python 3.13.12、Pillow 12.2.0。所有测试只使用程序绘制的非私人测试场景和印刷测试页，不包含调用者的生活照、手抄或参考图库。测试页不是文学原作，也不是真实手写素材。1.0.1 补充 GitHub 安装和下载说明，合成引擎保持 1.0.0。
+验证日期：2026-11-18。环境：Python 3.13.12、Pillow 12.2.0。测试素材为程序绘制的非私人场景和印刷测试页，不含真实手抄图库或私人照片。1.1.0 增加默认的轻微日系胶片调色，并保留显式关闭选项。
 
-- Skill 结构和 frontmatter 校验通过。
-- `scripts/self_test.py` 的 **30 项测试全部通过**，含四种布局、上下/左右变体、纵向穿页、EXIF 无损方向映射、中文素材路径、源文件不变、透明打孔和原边缘保留。
-- 拒绝或检出：漏署名、正文框越界、纸张容器越界、最小字高不足、主体受挡、分割线穿过主体、目录越界/符号链接越界、覆盖已有目录、版权证据缺失、CMYK/透明生活照、ICC 冲突。
-- 篡改测试通过：成品像素或遮罩被修改，即使重写文件哈希仍会在重新合成比较时失败；RGB 改动不会因 alpha 不变而漏检。源文件变化、输出 ICC 变化、旧成功报告遗留也有测试。
-- 目视复核门槛已测试：自动通过而未完成逐字/出处复核时，`delivery_ready` 为 `false`，严格命令失败；不会把“框在图内”当作文字识别证明。
-- 四份配方经命令行实际生成并独立验证，三个拼接结构的 1,152,000 个生活照测试像素全部不变；叠纸结构的完整照片底层可重组为 0 差异，覆盖区以外 0 差异。
-- 已对照两张完整测试纸页及四种输出目视检查：测试文本、标点、署名、打孔、纸张纹理和边缘保留，叠纸能透景且纸张仍可辨。记录只适用于这些合成夹具，不表示任何真实文学作品的出处和版权已获核实。
-- 已执行 ZIP 解压后的独立目录运行检查，使用随包示例、相对路径和中文结果目录验证，不依赖原工作区路径。
+- Skill 结构和 frontmatter 校验通过，39 项自测全部通过。
+- 验证四种布局、上下/左右变体、纵向穿页、EXIF 方向、中文路径、源文件不变、完整纸页、透明打孔、主体保护和覆盖范围。
+- 未调色原照保持源图解码像素；调色副本保持原尺寸与构图。关闭调色或强度为 0 时，副本与原照逐像素一致。
+- 默认调色经过离散 RGB 色块检查：通道变化不超过 16 个 8 位等级；黄/蓝色块保留色彩次序和至少 85% 的原色差，白色不低于 250，黑位仅轻抬。该检查不代替真实照片的肤色、氛围和亮部目视复核。
+- 颗粒固定种子可复现，为极轻微单色噪点；在整幅照片上生成后再分割，重组与合成校验均以 `photo-graded.png` 为基准。调色原本就会改变 RGB，报告明确记录相对原照的真实差异。
+- 同一配方开关照片调色时，手抄合成层逐像素相同，不会误调纸张、笔迹或署名。
+- 篡改成品、调色底图、遮罩、源文件、ICC 或调色记录可被重算检查检出；改写文件哈希不能绕过预期像素比较。
+- 目视复核新增 `photo_look_natural`。未逐项确认时，严格验证不通过，不会把自动像素检查冒充文字/版权/审美认证。
+- 四份示例配方均已命令行生成并严格复核；ZIP 解压后合成与验证运行通过，结果仍正确保持“自动通过、待目视复核”。
 
-机器可读结果：[examples/validation-results.json](examples/validation-results.json)。测试日志：[examples/self-test.log](examples/self-test.log)。布局预览：[examples/layout-preview.png](examples/layout-preview.png)。
-
-## 自行复现
-
-在已安装依赖的 Skill 目录运行：
+机器结果：[examples/validation-results.json](examples/validation-results.json)。测试日志：[examples/self-test.log](examples/self-test.log)。预览：[examples/layout-preview.png](examples/layout-preview.png)。
 
 ```bash
 python scripts/self_test.py
@@ -23,4 +20,4 @@ python scripts/compose.py examples/demo/recipes/overlay.json --assets examples/d
 python scripts/verify.py my-test-result --assets examples/demo/assets
 ```
 
-第二条应返回 `automatic_pass: true` 与 `delivery_ready: false`；这是正确状态。真实任务仍须执行者对照自己的原素材完成 `review.json`，再用 `--require-review` 检查。不能将包内测试的已复核结果套用到新素材。
+真实任务需对照自己的原素材完成 `review.json`，再运行 `--require-review`。新引擎不会验证旧引擎生成的包；历史结果请使用相应 GitHub 版本的验证器。

@@ -84,7 +84,8 @@ def create_demo(root):
     portrait.save(pages / "portrait.png")
     base = {
         "schema_version": 1,
-        "photo": {"image": "photos/scene.png", "protected_regions": [[780, 140, 1270, 770]]},
+        "photo": {"image": "photos/scene.png", "protected_regions": [[780, 140, 1270, 770]],
+                  "look": {"preset": "japanese-film", "strength": 0.45, "grain": 0.35, "seed": 1729}},
         "paper": {
             "image": "handcopies/landscape.png", "asset_kind": "synthetic-test",
             "expected_transcript": "A quiet afternoon.\nLight rests here; the day goes on.\n- Test author\nTEST PAGE ONLY / NOT HANDWRITING",
