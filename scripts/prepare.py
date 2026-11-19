@@ -10,7 +10,7 @@ from pathlib import Path
 import shutil
 import sys
 
-from collage_core import asset_path, load_source, read_json, render, require, sha_file, write_json
+from collage_core import asset_path, load_source, read_json, render, require, resource_limits, sha_file, write_json
 
 SKILL = Path(__file__).resolve().parents[1]
 
@@ -32,7 +32,8 @@ def select_page(catalog, mood='', paper_id=None):
 
 def prepare(photo_path, out, mood='', paper_id=None, layout='auto', box=None,
             axis='y', split_at=None, protected=None, no_grade=False, library=None,
-            transcript=None, regions=None, crop_box=None):
+            transcript=None, regions=None, crop_box=None, frame=None, resources=None,
+            allow_paper_upscale=False):
     if library is None:
         from library import ensure_library, materialize_page
         library,catalog=ensure_library(Path(out).resolve().parent/'.literary-reference-cache')
@@ -50,35 +51,41 @@ def prepare(photo_path, out, mood='', paper_id=None, layout='auto', box=None,
     paper_path = asset_path(library, page['image'])
     require(sha_file(paper_path) == page['sha256'], '共享手抄校验失败，请重新安装完整 Skill。')
     photo_path = Path(photo_path).resolve()
-    photo, profile, photo_meta = load_source(photo_path, 'photo')
-    paper, paper_profile, _ = load_source(paper_path, 'paper')
+    limits=resource_limits({'resources':resources or {}})
+    photo, profile, photo_meta = load_source(photo_path, 'photo', limits['max_source_pixels'])
+    paper, paper_profile, _ = load_source(paper_path, 'paper', limits['max_source_pixels'])
     require(not (profile and paper_profile and profile != paper_profile), '照片与手抄色彩配置不兼容。')
     out = Path(out).resolve()
     require(not out.exists(), '工作目录已存在，请使用新的 --out。')
     width, height = photo.size
     margin = max(8, min(24, min(width, height) // 50))
     kind = ('horizontal' if height > width * 1.2 else 'vertical') if layout == 'auto' else layout
-    require(kind in ('vertical', 'horizontal', 'overlay', 'triptych'), '不支持的布局。')
-    if kind == 'vertical' or (kind == 'triptych' and axis == 'y'):
+    require(kind in ('vertical', 'horizontal', 'overlay', 'triptych', 'paper-frame'), '不支持的布局。')
+    if kind == 'paper-frame':
+        require(isinstance(frame,dict), '纸面嵌图需由 Agent 根据真实纸页提供 --frame-file。')
+        layout_cfg=copy.deepcopy(frame)
+        layout_cfg['type']='paper-frame'
+    elif kind == 'vertical' or (kind == 'triptych' and axis == 'y'):
         scale = min(1, (width - 2 * margin) / paper.width)
         extent = max(1, math.floor(paper.height * scale)) + 2 * margin
     else:
         scale = min(1, (height - 2 * margin) / paper.height)
         extent = max(1, math.floor(paper.width * scale)) + 2 * margin
-    require(scale > 0 and page['smallest_character_px'] * scale >= page['minimum_character_px'],
-            '照片分辨率不足以清楚呈现完整手抄；请使用高清生活照或改用较大容器。')
-    layout_cfg = {'type':kind, 'margin':margin, 'gap':0}
-    if kind in ('vertical','horizontal'):
-        layout_cfg.update(panel_size=extent, paper_side='after')
-    elif kind == 'triptych':
-        require(split_at is not None, '穿页布局需由 Agent 根据照片提供 --split-at。')
-        layout_cfg.update(panel_size=extent, axis=axis, split_at=split_at)
-    else:
-        require(box is not None, '叠纸布局需由 Agent 根据真实留白提供 --box。')
-        layout_cfg['box'] = box
+    if kind != 'paper-frame':
+        require(scale > 0 and page['smallest_character_px'] * scale >= page['minimum_character_px'],
+                '照片分辨率不足以清楚呈现完整手抄；请使用高清生活照或改用较大容器。')
+        layout_cfg = {'type':kind, 'margin':margin, 'gap':0}
+        if kind in ('vertical','horizontal'):
+            layout_cfg.update(panel_size=extent, paper_side='after')
+        elif kind == 'triptych':
+            require(split_at is not None, '穿页布局需由 Agent 根据照片提供 --split-at。')
+            layout_cfg.update(panel_size=extent, axis=axis, split_at=split_at)
+        else:
+            require(box is not None, '叠纸布局需由 Agent 根据真实留白提供 --box。')
+            layout_cfg['box'] = box
     paper_cfg = {key:copy.deepcopy(page[key]) for key in
                  ('image','expected_transcript','regions','smallest_character_px','minimum_character_px','rights')}
-    paper_cfg.update(asset_kind=page.get('asset_kind','real-handcopy'), allow_upscale=False)
+    paper_cfg.update(asset_kind=page.get('asset_kind','real-handcopy'), allow_upscale=allow_paper_upscale)
     if 'production' in page:
         paper_cfg['production']=copy.deepcopy(page['production'])
     if transcript is not None:
@@ -93,6 +100,8 @@ def prepare(photo_path, out, mood='', paper_id=None, layout='auto', box=None,
                  'look':{'preset':'none'} if no_grade else
                     {'preset':'japanese-film','strength':0.45,'grain':0.35,'seed':1729}},
         'paper':paper_cfg,'layout':layout_cfg,'background':[240,235,221]}
+    if resources is not None:
+        config['resources']=copy.deepcopy(resources)
     out.mkdir(parents=True)
     assets=out/'assets'
     (assets/'photos').mkdir(parents=True)
@@ -126,7 +135,10 @@ def main():
     p.add_argument('--out', required=True)
     p.add_argument('--mood', default='安静')
     p.add_argument('--paper-id')
-    p.add_argument('--layout', choices=('auto','vertical','horizontal','overlay','triptych'), default='auto')
+    p.add_argument('--layout', choices=('auto','vertical','horizontal','overlay','triptych','paper-frame'), default='auto')
+    p.add_argument('--frame-file', help='Agent 制作的 paper-frame 布局 JSON；不是用户填写表单')
+    p.add_argument('--resources-file', help='Agent 根据宿主资源制作的 resources JSON')
+    p.add_argument('--allow-paper-upscale', action='store_true', help='允许整纸等比放大，照片仍不缩放')
     p.add_argument('--box', nargs=4, type=int)
     p.add_argument('--axis', choices=('x','y'), default='y')
     p.add_argument('--split-at', type=int)
@@ -141,7 +153,9 @@ def main():
         result=prepare(args.photo,args.out,args.mood,args.paper_id,args.layout,args.box,
                        args.axis,args.split_at,json.loads(args.protected_json),args.no_grade,args.library,
                        Path(args.transcript_file).read_text(encoding='utf-8') if args.transcript_file else None,
-                       read_json(args.regions_file) if args.regions_file else None,args.crop_box)
+                       read_json(args.regions_file) if args.regions_file else None,args.crop_box,
+                       read_json(args.frame_file) if args.frame_file else None,
+                       read_json(args.resources_file) if args.resources_file else None,args.allow_paper_upscale)
     except (ValueError,KeyError,TypeError,OSError) as exc:
         print(f'制作失败：{exc}', file=sys.stderr)
         return 1

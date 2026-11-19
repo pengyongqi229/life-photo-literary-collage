@@ -9,10 +9,10 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageOps, __version__ as PILLOW_VERSION
 from photo_look import apply_photo_look
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 MAX_PIXELS = 40_000_000
 ARTIFACTS = ("final.png", "photo-native.png", "photo-graded.png", "photo-base.png",
-             "paper-layer.png", "coverage-mask.png")
+             "paper-layer.png", "paper-surface.png", "coverage-mask.png")
 REVIEW_FIELDS = (
     "full_text_and_punctuation", "signature", "source_page_complete",
     "paper_texture_and_edges", "legibility", "subject_unobstructed",
@@ -81,15 +81,36 @@ def check_box(value, size, name):
     return tuple(value)
 
 
-def safe_size(width, height):
-    require(0 < width and 0 < height and width * height <= MAX_PIXELS,
-            f"画布超过限制（{MAX_PIXELS:,} 像素）或为空；不能通过缩小生活照规避。")
+def safe_size(width, height, limit=MAX_PIXELS):
+    require(0 < width and 0 < height and width * height <= limit,
+            f"画布超过限制（{limit:,} 像素）或为空；不能通过缩小生活照规避。")
 
 
-def load_source(path, role):
+def resource_limits(config):
+    value = config.get('resources', {})
+    require(isinstance(value, dict), 'resources 必须为对象。')
+    result = {}
+    for key, default, ceiling in [('max_source_pixels', MAX_PIXELS, 80_000_000),
+                                  ('max_canvas_pixels', MAX_PIXELS, 120_000_000),
+                                  ('max_working_memory_mb', 4096, 32768)]:
+        result[key] = integer(value.get(key, default), 'resources.' + key, 1)
+        require(result[key] <= ceiling, f'resources.{key} 超过支持上限 {ceiling}。')
+    require(not set(value) - set(result), 'resources 含未知字段。')
+    return result
+
+
+def check_resource_budget(canvas, photo, paper, limits):
+    safe_size(*canvas, limits['max_canvas_pixels'])
+    estimate = 48 * math.prod(canvas) + 32 * math.prod(photo) + 16 * math.prod(paper)
+    require(estimate <= limits['max_working_memory_mb'] * 1024**2,
+            '预计工作内存超过配方预算；请按宿主可用内存合理配置 resources 或换布局，不能缩小原照。')
+    return estimate
+
+
+def load_source(path, role, max_pixels=MAX_PIXELS):
     before = sha_file(path)
     with Image.open(path) as original:
-        safe_size(*original.size)
+        safe_size(*original.size, max_pixels)
         require(getattr(original, "n_frames", 1) == 1, f"{role} 不支持动画或多页输入。")
         require(original.mode in ("RGB", "RGBA", "L", "LA", "P"),
                 f"{role} 不支持 {original.mode}；请提供 8 位 RGB/RGBA/灰度/调色板输入。")
@@ -148,10 +169,11 @@ def full_page_layer(page, target, opacity, ink_opacity):
 def build(config, assets):
     require(config.get("schema_version") == 1, "仅支持 schema_version: 1。")
     photo_cfg, paper_cfg, layout = config["photo"], config["paper"], config["layout"]
+    limits = resource_limits(config)
     photo_path = asset_path(assets, photo_cfg["image"])
     paper_path = asset_path(assets, paper_cfg["image"])
-    photo, icc, photo_meta = load_source(photo_path, "photo")
-    paper, paper_icc, paper_meta = load_source(paper_path, "paper")
+    photo, icc, photo_meta = load_source(photo_path, "photo", limits['max_source_pixels'])
+    paper, paper_icc, paper_meta = load_source(paper_path, "paper", limits['max_source_pixels'])
     require(not (icc and paper_icc and icc != paper_icc),
             "两张素材的 ICC 配置不同。请先准备色彩空间相容的手抄素材，生活照不得自动转换色域。")
     native_photo = photo
@@ -189,7 +211,11 @@ def build(config, assets):
     gap = integer(layout.get("gap", 0), "layout.gap")
     margin = integer(layout.get("margin", 20), "layout.margin")
     kind = layout["type"]
-    require(kind in ("vertical", "horizontal", "triptych", "overlay"), "不支持该布局。")
+    require(kind in ("vertical", "horizontal", "triptych", "overlay", "paper-frame"), "不支持该布局。")
+    if kind == 'paper-frame':
+        from paper_frame import render_frame
+        return render_frame(photo, native_photo, paper, config, region_boxes,
+                            photo_meta, paper_meta, icc, processing, limits)
     width, height = photo.size
     # (source rectangle, destination top-left); every source pixel is placed exactly once.
     tiles = []
@@ -233,7 +259,7 @@ def build(config, assets):
         canvas_size = photo.size
         panel = check_box(layout["box"], canvas_size, "layout.box")
         tiles.append(((0, 0, width, height), (0, 0)))
-    safe_size(*canvas_size)
+    check_resource_budget(canvas_size, photo.size, paper.size, limits)
     interior = (panel[0] + margin, panel[1] + margin, panel[2] - margin, panel[3] - margin)
     require(interior[0] < interior[2] and interior[1] < interior[3], "纸张容器被 margin 挤空。")
     opacity = number(paper_cfg.get("opacity", 0.55 if kind == "overlay" else 1), "paper.opacity", 0.01, 1)
@@ -269,7 +295,7 @@ def build(config, assets):
         check_box(mapped, canvas_size, "mapped text region")
         mapped_regions.append({"kind": region["kind"], "source_box": list(box), "output_box": mapped})
     images = {"final.png": final, "photo-native.png": native_photo, "photo-graded.png": photo, "photo-base.png": base,
-              "paper-layer.png": layer, "coverage-mask.png": coverage}
+              "paper-layer.png": layer, "paper-surface.png": layer.copy(), "coverage-mask.png": coverage}
     geometry = {"canvas_size": list(canvas_size), "paper_box": [px, py, px + page_layer.width, py + page_layer.height],
                 "paper_scale": [sx, sy], "effective_smallest_character_px": smallest * scale,
                 "regions": mapped_regions,
@@ -314,6 +340,17 @@ def check_pixels(images, geometry):
     restored_diff = difference_pixels(restored, photo)
     require(restored_diff == 0, "画布底层无法逐像素还原为 photo-graded.png。")
     require(photo_changed == 0, "覆盖范围以外的照片像素与 photo-graded.png 不一致。")
+    paper_checks = {}
+    if 'paper_frame' in geometry:
+        require(mask.crop(geometry['paper_frame']['photo_box']).getbbox() is None,
+                '纸面图层覆盖了嵌入照片，必须完整露出照片。')
+        reference = Image.alpha_composite(base, images['paper-surface.png'])
+        for region in geometry['regions']:
+            box = region['output_box']
+            require(difference_pixels(final.crop(box), reference.crop(box)) == 0,
+                    '嵌图覆盖或改动了文字/署名区域。')
+        paper_checks = {'paper_frame_photo_uncovered': True,
+                        'text_and_signature_pixels_unchanged_by_embedding': True}
     return {"photo_total_pixels": photo.width * photo.height,
             "comparison_baseline": "photo-graded.png",
             "native_to_graded_different_pixels": difference_pixels(native, photo),
@@ -321,12 +358,19 @@ def check_pixels(images, geometry):
             "visible_photo_pixels_checked": visible_checked,
             "visible_photo_different_pixels": photo_changed,
             "covered_photo_pixels": photo.width * photo.height - visible_checked,
-            "text_check": "geometry_only; visual review required; no OCR performed"}
+            "text_check": "geometry_only; visual review required; no OCR performed", **paper_checks}
 
 
-def review_template():
+def review_fields(config=None):
+    fields = list(REVIEW_FIELDS)
+    if config and config['layout']['type'] == 'paper-frame' and config['layout'].get('mode') == 'extend':
+        fields.append('paper_extension_natural')
+    return fields
+
+
+def review_template(config=None):
     return {"checked_by": "", "notes": "逐项对照原图填写。脚本不能证明字句、作者和版权正确。",
-            "checks": {key: False for key in REVIEW_FIELDS}}
+            "checks": {key: False for key in review_fields(config)}}
 
 
 def verify_bundle(out, assets, review_path=None, require_review=False):
@@ -337,21 +381,23 @@ def verify_bundle(out, assets, review_path=None, require_review=False):
     require(manifest["sources"] == source_meta, "源文件或解码结果与生成时不同。")
     require(manifest["geometry"] == geometry, "记录的布局与重算结果不一致。")
     require(manifest["photo_processing"] == processing, "调色记录与从原照重算的结果不一致。")
-    actual = {}
     for name in ARTIFACTS:
         path = out / name
         require(sha_file(path) == manifest["artifact_sha256"][name], f"文件哈希不一致：{name}")
-        actual[name] = load_output_png(path, expected[name].mode)
+        actual = load_output_png(path, expected[name].mode)
         required_icc = expected_icc if expected[name].mode == "RGBA" else None
-        require(actual[name].info.get("icc_profile") == required_icc, f"ICC 配置不一致：{name}")
-        require(not actual[name].getexif(), f"输出不应携带 EXIF 元数据：{name}")
-        require(actual[name].size == expected[name].size, f"尺寸不一致：{name}")
-        require(difference_pixels(actual[name], expected[name]) == 0, f"重算像素不一致：{name}")
-    pixels = check_pixels(actual, geometry)
+        require(actual.info.get("icc_profile") == required_icc, f"ICC 配置不一致：{name}")
+        require(not actual.getexif(), f"输出不应携带 EXIF 元数据：{name}")
+        require(actual.size == expected[name].size, f"尺寸不一致：{name}")
+        require(difference_pixels(actual, expected[name]) == 0, f"重算像素不一致：{name}")
+        actual.close()
+    # Every disk image now equals the independently rebuilt image. Avoid retaining
+    # a second full set of large canvases merely to repeat these pixel checks.
+    pixels = check_pixels(expected, geometry)
     review_path = Path(review_path) if review_path else out / "review.json"
     review = read_json(review_path) if review_path.exists() else review_template()
     checked = isinstance(review.get("checked_by"), str) and bool(review["checked_by"].strip())
-    approved = checked and all(review.get("checks", {}).get(key) is True for key in REVIEW_FIELDS)
+    approved = checked and all(review.get("checks", {}).get(key) is True for key in review_fields(manifest['recipe']))
     report = {"automatic_pass": True, "visual_review_pass": approved,
               "delivery_ready": approved, "engine_version": VERSION,
               "runtime_pillow": PILLOW_VERSION, "render_pillow": manifest["pillow_version"],
@@ -379,11 +425,13 @@ def render(config, assets, out):
         encoded = im.copy()
         encoded.info.clear()  # retain source ICC explicitly; do not copy EXIF/GPS to outputs
         encoded.save(out / name, format="PNG", **kwargs)
+        encoded.close()
     manifest = {"engine_version": VERSION, "pillow_version": PILLOW_VERSION,
                 "normalization": "Source EXIF permutation + decode RGBA; photo_processing is recorded separately",
                 "recipe": config, "sources": metadata, "geometry": geometry,
                 "photo_processing": processing,
                 "artifact_sha256": {name: sha_file(out / name) for name in ARTIFACTS}}
     write_json(out / "manifest.json", manifest)
-    write_json(out / "review.json", review_template())
+    write_json(out / "review.json", review_template(config))
+    images.clear()
     return verify_bundle(out, root)

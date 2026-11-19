@@ -37,7 +37,7 @@ def create_previews(bundles, out, size=(720, 1080), minimum_text_px=12):
         kind = layout['type']
         axis = ('y' if kind == 'vertical' else 'x') if kind != 'triptych' else layout.get('axis', 'x')
         span = None
-        if kind != 'overlay':
+        if kind not in ('overlay', 'paper-frame'):
             span = ((paper[2] - paper[0]) / full_size[0] if axis == 'y'
                     else (paper[3] - paper[1]) / full_size[1])
         warnings = []
