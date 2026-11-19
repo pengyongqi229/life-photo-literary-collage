@@ -103,14 +103,21 @@ def prepare(photo_path, out, mood='', paper_id=None, layout='auto', box=None,
     write_json(assets/'catalog.json', {'schema_version':1,'items':[page]})
     write_json(out/'recipe.json', config)
     report=render(config, assets, out/'result')
+    from preview import create_previews
+    proof=create_previews([out/'result'],out/'preview')
     write_json(out/'selection.json', {'paper_id':page['id'],'mood':mood,
         'library_version':catalog['version'],'source_verification':page['source_verification'],
         'photo_file_sha256':photo_meta['file_sha256'], 'shared_paper_sha256':page['sha256'],
         'attribution_note':'图中文字和落款按原图保留；不可把图上落款当作已核实作者。'})
-    return {'workspace':str(out),'image':str(out/'result/final.png'),
+    return {'workspace':str(out),'draft_image':str(out/'result/final.png'),
+            'status':'draft-needs-visual-review',
+            'preview_image':proof['previews'][0],
+            'preview_report':proof['report'],
+            'viewing_warnings':proof['warnings'],
+            'layout_selection':'orientation-only-starting-point' if layout=='auto' else 'agent-selected',
             'paper_id':page['id'],'automatic_pass':report['automatic_pass'],
             'delivery_ready':report['delivery_ready'],
-            'next':'Agent 对照原纸完成文字、审美与出处/权利复核，再运行 verify.py --require-review。'}
+            'next':'内部查看完整预览和原纸，处理阅读/留白问题；auto 仅按横竖给草稿。自行完成选文、构图、文字和出处复核，再运行 finalize.py 导出唯一完成品；不得把草稿、检查或选模板任务交给用户。'}
 
 
 def main():

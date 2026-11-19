@@ -8,6 +8,10 @@
 
 [下载完整安装包 ZIP](https://github.com/pengyongqi229/life-photo-literary-collage/archive/refs/heads/main.zip) · [查看最新版代码](https://github.com/pengyongqi229/life-photo-literary-collage) · [四种布局测试预览](examples/layout-preview.png)
 
+**审美仍由执行 Agent 看图复核。** 1.2.1 起，单照片入口会自动生成整张画布的阅读尺寸预览，提示文字过小、纸幅过窄等问题，并明确第一次输出为待审草稿。规则见 [构图与审美复核](references/aesthetic-review.md)。自动测试验证合成、素材完整性与像素保护，不代表已经验证所有宿主中的审美表现。
+
+**这些中间步骤都在内部完成。用户只上传生活照，收到一张完成品。** Agent 负责选文、试排、查看预览、核对与返工，不让用户挑模板或处理检查提示。`finalize.py` 在当前预览和严格内部复核通过后，仅导出一张交付 PNG；`prepare.py` 的 `draft_image` 供内部制作使用。
+
 ## 从 GitHub 安装
 
 仓库地址：<https://github.com/pengyongqi229/life-photo-literary-collage>。
@@ -58,6 +62,8 @@ python /path/to/life-photo-literary-collage/scripts/verify.py result-work-v1/res
 
 Agent 先运行 `scripts/library.py --out <工作区素材缓存>` 自动解压，随后用 `scripts/search_library.py --mood 情绪` 检索全部 69 条记录，并查看本地原参考图，按需裁取真实手抄；可用 `--paper-id` 明确选定，或由情绪标签排序。脚本不做视觉情绪识别，也不会把待查证的作者/出处自动标成已核实。像素检查通过后，仍需逐行目视与出处/使用依据复核，填写 `result/review.json`，再加 `--require-review` 运行严格校验。
 
+`prepare.py` 返回的 `preview_image` 是完整、不截边的阅读尺寸预览；原尺寸成图不变。`--layout auto` 只按照片横竖给草稿起点。Agent 须检查预览里的文字、纸幅、留白与情绪，再决定结构。多个工作区草稿可运行 `python scripts/preview.py result-v1 result-v2 --out comparison-v1` 对比；自定义或修改配方后也须重新生成预览。用户不需要自己挑模板。
+
 `--layout auto|vertical|horizontal|overlay|triptych`、`--box 左 上 右 下`、`--axis x|y`、`--split-at`、`--protected-json` 供 Agent 根据构图选择；不需要用户指定。`--no-grade` 关闭调色。完整自定义仍可沿用下方 `compose.py` 配方流程。库内没有合适手抄时，按 [选文规则](references/editorial.md) 查证外部片段，再用 `render_excerpt.py` 及随包字体制作手写风排印页；来源记录模板见 [examples/excerpt-source.template.json](examples/excerpt-source.template.json)。新效果页不能称真实手抄或作者亲笔。
 
 ## 默认的轻微胶片调色
@@ -71,7 +77,7 @@ Agent 先运行 `scripts/library.py --out <工作区素材缓存>` 自动解压�
 }
 ```
 
-需要完全不改原像素时，将 `look` 改为 `{"preset": "none"}`。调色必然改变颜色像素，因此同时提供未调色原照、调色底图与合成验证记录。细则见 [调色说明](references/photo-look.md)。
+需要完全不改原像素时，将 `look` 改为 `{"preset": "none"}`。调色必然改变颜色像素，因此在工作区保留未调色原照、调色底图与合成验证记录供内部复核，默认用户只收到完成品。细则见 [调色说明](references/photo-look.md)。
 
 ## 先跑一个无需私人素材的示例
 

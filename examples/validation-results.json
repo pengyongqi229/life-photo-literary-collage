@@ -1,5 +1,5 @@
 {
-  "package_version": "1.2.0",
+  "package_version": "1.2.1",
   "engine_version": "1.2.0",
   "verified_on": "2026-11-18",
   "python": "3.13.12",
@@ -22,7 +22,8 @@
       "damaged library rejection",
       "never overwrite",
       "pending review gate"
-    ]
+    ],
+    "revalidated_on": "2026-11-19"
   },
   "source_extraction": {
     "pages": 69,
@@ -36,7 +37,8 @@
       "full text layout",
       "source record rejection",
       "labelled effect page and photo preservation"
-    ]
+    ],
+    "revalidated_on": "2026-11-19"
   },
   "scope": "Automatic mechanics only; literary source, rights and visual review are not auto-certified.",
   "portable_extraction_check": {
@@ -47,5 +49,22 @@
     "requires_original_reference_zip": false,
     "automatic_pass": true,
     "delivery_ready": false
+  },
+  "quality_patch_verified_on": "2026-11-19",
+  "viewing_preview_tests": {
+    "passed": 4,
+    "failed": 0,
+    "checks": [
+      "all four edges remain visible",
+      "source final PNG unchanged",
+      "pixel-valid small text is flagged at viewing size",
+      "narrow paper panel is flagged",
+      "unfinished internal review blocks final export",
+      "preview of a different draft blocks final export",
+      "approved synthetic fixture exports exactly one unchanged PNG"
+    ]
+  },
+  "host_aesthetic_validation": {
+    "doubao": "Not end-to-end validated with the caller original photo and original result."
   }
 }
