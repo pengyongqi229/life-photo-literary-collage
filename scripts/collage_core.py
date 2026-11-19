@@ -9,7 +9,7 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageOps, __version__ as PILLOW_VERSION
 from photo_look import apply_photo_look
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 MAX_PIXELS = 40_000_000
 ARTIFACTS = ("final.png", "photo-native.png", "photo-graded.png", "photo-base.png",
              "paper-layer.png", "coverage-mask.png")
@@ -160,8 +160,13 @@ def build(config, assets):
     processing["graded_pixel_sha256"] = sha_pixels(photo)
     transcript = paper_cfg.get("expected_transcript")
     require(isinstance(transcript, str) and transcript.strip(), "必须记录完整原文、标点和署名 expected_transcript。")
-    require(paper_cfg.get("asset_kind") in ("real-handcopy", "synthetic-test"),
-            "paper.asset_kind 必须为 real-handcopy 或 synthetic-test。")
+    require(paper_cfg.get("asset_kind") in ("real-handcopy", "synthetic-test", "typeset-handwriting"),
+            "paper.asset_kind 必须区分真实手抄、手写风排印与测试素材。")
+    if paper_cfg["asset_kind"] == "typeset-handwriting":
+        production = paper_cfg.get("production", {})
+        require(production.get("method") == "font-render" and production.get("is_real_handwriting") is False
+                and production.get("author_penmanship") is False,
+                "新文字排印须明确记录为手写风效果，不能冒充真实手抄或作者亲笔。")
     rights = paper_cfg.get("rights", {})
     require(rights.get("basis") in ("user-original", "permission", "public-domain", "licensed", "synthetic-test")
             and isinstance(rights.get("evidence"), str) and rights["evidence"].strip(),

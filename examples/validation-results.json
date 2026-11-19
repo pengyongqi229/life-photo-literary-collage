@@ -1,190 +1,51 @@
 {
-  "package_version": "1.1.0",
-  "engine_version": "1.1.0",
+  "package_version": "1.2.0",
+  "engine_version": "1.2.0",
   "verified_on": "2026-11-18",
   "python": "3.13.12",
   "pillow": "12.2.0",
   "self_tests": {
     "passed": 39,
+    "failed": 0
+  },
+  "photo_only_tests": {
+    "passed": 5,
     "failed": 0,
-    "log": "self-test.log"
+    "shared_pages_exercised": 9,
+    "reference_records_checked": 69,
+    "checks": [
+      "shared page hashes",
+      "all nine pages with one photo",
+      "four layouts",
+      "no-grade pixel identity",
+      "source file unchanged",
+      "damaged library rejection",
+      "never overwrite",
+      "pending review gate"
+    ]
   },
-  "skill_structure": "passed",
-  "fixtures": "Procedural non-private scene and printed test text only; no real literary source or personal photo is certified.",
-  "layout_runs": {
-    "vertical": {
-      "automatic_pass": true,
-      "visual_review_pass": true,
-      "delivery_ready": true,
-      "engine_version": "1.1.0",
-      "runtime_pillow": "12.2.0",
-      "render_pillow": "12.2.0",
-      "pixel_checks": {
-        "photo_total_pixels": 1152000,
-        "comparison_baseline": "photo-graded.png",
-        "native_to_graded_different_pixels": 1152000,
-        "base_reassembled_different_pixels": 0,
-        "visible_photo_pixels_checked": 1152000,
-        "visible_photo_different_pixels": 0,
-        "covered_photo_pixels": 0,
-        "text_check": "geometry_only; visual review required; no OCR performed"
-      },
-      "photo_processing": {
-        "preset": "japanese-film",
-        "strength": 0.45,
-        "grain": 0.35,
-        "seed": 1729,
-        "algorithm_version": 1,
-        "max_channel_delta": 6,
-        "mean_absolute_channel_delta": [
-          2.545467,
-          0.591496,
-          1.28678
-        ],
-        "pixel_values_may_change": true,
-        "geometry_changed": false,
-        "native_pixel_sha256": "ab3c4863f7d914e4507ff083efb6bd15422653f852a95a68844e9fc366e54e4b",
-        "graded_pixel_sha256": "101de0c3d795f4e0a179322541c058cf40fb43d48b075e9461adc6c84f521932"
-      },
-      "limits": [
-        "自动检查仅证明文件、几何和合成像素；文字语义/漏标范围/辨识度须目视复核。",
-        "调色会改变 RGB；photo-native.png 保留未调色原照，photo-graded.png 是合成校验基准。",
-        "叠纸区的扁平合成像素会变化；覆盖区外必须与调色底图零差异。"
-      ],
-      "review_sha256": "8d6a2dfabd4c87efa1fbbe95b4a00f5ff65f0540634b12bf4d269d4ec3e752d1"
-    },
-    "horizontal": {
-      "automatic_pass": true,
-      "visual_review_pass": true,
-      "delivery_ready": true,
-      "engine_version": "1.1.0",
-      "runtime_pillow": "12.2.0",
-      "render_pillow": "12.2.0",
-      "pixel_checks": {
-        "photo_total_pixels": 1152000,
-        "comparison_baseline": "photo-graded.png",
-        "native_to_graded_different_pixels": 1152000,
-        "base_reassembled_different_pixels": 0,
-        "visible_photo_pixels_checked": 1152000,
-        "visible_photo_different_pixels": 0,
-        "covered_photo_pixels": 0,
-        "text_check": "geometry_only; visual review required; no OCR performed"
-      },
-      "photo_processing": {
-        "preset": "japanese-film",
-        "strength": 0.45,
-        "grain": 0.35,
-        "seed": 1729,
-        "algorithm_version": 1,
-        "max_channel_delta": 6,
-        "mean_absolute_channel_delta": [
-          2.545467,
-          0.591496,
-          1.28678
-        ],
-        "pixel_values_may_change": true,
-        "geometry_changed": false,
-        "native_pixel_sha256": "ab3c4863f7d914e4507ff083efb6bd15422653f852a95a68844e9fc366e54e4b",
-        "graded_pixel_sha256": "101de0c3d795f4e0a179322541c058cf40fb43d48b075e9461adc6c84f521932"
-      },
-      "limits": [
-        "自动检查仅证明文件、几何和合成像素；文字语义/漏标范围/辨识度须目视复核。",
-        "调色会改变 RGB；photo-native.png 保留未调色原照，photo-graded.png 是合成校验基准。",
-        "叠纸区的扁平合成像素会变化；覆盖区外必须与调色底图零差异。"
-      ],
-      "review_sha256": "8d6a2dfabd4c87efa1fbbe95b4a00f5ff65f0540634b12bf4d269d4ec3e752d1"
-    },
-    "triptych": {
-      "automatic_pass": true,
-      "visual_review_pass": true,
-      "delivery_ready": true,
-      "engine_version": "1.1.0",
-      "runtime_pillow": "12.2.0",
-      "render_pillow": "12.2.0",
-      "pixel_checks": {
-        "photo_total_pixels": 1152000,
-        "comparison_baseline": "photo-graded.png",
-        "native_to_graded_different_pixels": 1152000,
-        "base_reassembled_different_pixels": 0,
-        "visible_photo_pixels_checked": 1152000,
-        "visible_photo_different_pixels": 0,
-        "covered_photo_pixels": 0,
-        "text_check": "geometry_only; visual review required; no OCR performed"
-      },
-      "photo_processing": {
-        "preset": "japanese-film",
-        "strength": 0.45,
-        "grain": 0.35,
-        "seed": 1729,
-        "algorithm_version": 1,
-        "max_channel_delta": 6,
-        "mean_absolute_channel_delta": [
-          2.545467,
-          0.591496,
-          1.28678
-        ],
-        "pixel_values_may_change": true,
-        "geometry_changed": false,
-        "native_pixel_sha256": "ab3c4863f7d914e4507ff083efb6bd15422653f852a95a68844e9fc366e54e4b",
-        "graded_pixel_sha256": "101de0c3d795f4e0a179322541c058cf40fb43d48b075e9461adc6c84f521932"
-      },
-      "limits": [
-        "自动检查仅证明文件、几何和合成像素；文字语义/漏标范围/辨识度须目视复核。",
-        "调色会改变 RGB；photo-native.png 保留未调色原照，photo-graded.png 是合成校验基准。",
-        "叠纸区的扁平合成像素会变化；覆盖区外必须与调色底图零差异。"
-      ],
-      "review_sha256": "8d6a2dfabd4c87efa1fbbe95b4a00f5ff65f0540634b12bf4d269d4ec3e752d1"
-    },
-    "overlay": {
-      "automatic_pass": true,
-      "visual_review_pass": true,
-      "delivery_ready": true,
-      "engine_version": "1.1.0",
-      "runtime_pillow": "12.2.0",
-      "render_pillow": "12.2.0",
-      "pixel_checks": {
-        "photo_total_pixels": 1152000,
-        "comparison_baseline": "photo-graded.png",
-        "native_to_graded_different_pixels": 1152000,
-        "base_reassembled_different_pixels": 0,
-        "visible_photo_pixels_checked": 956570,
-        "visible_photo_different_pixels": 0,
-        "covered_photo_pixels": 195430,
-        "text_check": "geometry_only; visual review required; no OCR performed"
-      },
-      "photo_processing": {
-        "preset": "japanese-film",
-        "strength": 0.45,
-        "grain": 0.35,
-        "seed": 1729,
-        "algorithm_version": 1,
-        "max_channel_delta": 6,
-        "mean_absolute_channel_delta": [
-          2.545467,
-          0.591496,
-          1.28678
-        ],
-        "pixel_values_may_change": true,
-        "geometry_changed": false,
-        "native_pixel_sha256": "ab3c4863f7d914e4507ff083efb6bd15422653f852a95a68844e9fc366e54e4b",
-        "graded_pixel_sha256": "101de0c3d795f4e0a179322541c058cf40fb43d48b075e9461adc6c84f521932"
-      },
-      "limits": [
-        "自动检查仅证明文件、几何和合成像素；文字语义/漏标范围/辨识度须目视复核。",
-        "调色会改变 RGB；photo-native.png 保留未调色原照，photo-graded.png 是合成校验基准。",
-        "叠纸区的扁平合成像素会变化；覆盖区外必须与调色底图零差异。"
-      ],
-      "review_sha256": "8d6a2dfabd4c87efa1fbbe95b4a00f5ff65f0540634b12bf4d269d4ec3e752d1"
-    }
+  "source_extraction": {
+    "pages": 69,
+    "decoded_crop_pixels_identical": true,
+    "original_full_references_included": true
   },
+  "fallback_tests": {
+    "passed": 3,
+    "failed": 0,
+    "checks": [
+      "full text layout",
+      "source record rejection",
+      "labelled effect page and photo preservation"
+    ]
+  },
+  "scope": "Automatic mechanics only; literary source, rights and visual review are not auto-certified.",
   "portable_extraction_check": {
     "passed": true,
-    "tests": [
-      "ZIP CRC",
-      "independent extraction",
-      "default grade render and verification",
-      "new review field remains false until checked"
-    ],
-    "absolute_workspace_dependency": false
+    "single_photo_only": true,
+    "selected_paper": "love-world",
+    "absolute_workspace_dependency": false,
+    "requires_original_reference_zip": false,
+    "automatic_pass": true,
+    "delivery_ready": false
   }
 }

@@ -4,7 +4,9 @@
 
 先描述一个具体瞬间与一两种情绪：松弛的日常、轻快的童心、安静的独处、温柔的祝愿等。文学不必逐字描述画面里的物体，但应与照片的态度相容。用户指定文字时先寻找对应的完整手抄，不擅自换句。
 
-优先级：用户自己的完整真实手抄 → 用户明确授权使用的手抄 → 已核实来源与图像使用权的外部素材。只有文本、没有真实手抄时，说明缺少手抄素材，建议用户自行书写并拍摄；不生成仿笔迹冒充真实手抄。示例里的印刷测试页只是验证工具的夹具。
+默认接收生活照，**优先检索完整 69 张参考素材**，有合适完整手抄则裁取真实纸区，保留原笔迹、所有文字、标点、署名和纸纹；不擅自只用其中少数图片。用户另有自己的手抄时可优先。没有合适且完整可用的库内手抄时，再联网寻找与照片情绪匹配的文学名家片段，核实文字、作者、作品出处与适用使用依据，制作相同审美的手写风排印页。使用者不需要上传或配置手抄库。
+
+`search_library.py` 检索全部记录。索引的 `search_summary` 是内容摘要，不是原文；`ocr_lines` 和标为草稿的 `expected_transcript` 不是准确转录。Agent 必须查看选中原纸，修正全文与正文/署名框后，通过 `prepare.py --transcript-file ... --regions-file ...` 使用。场景透出、缺署名或原图已截断的条目仍入库供检索，但不可假称为完整独立原纸；不能用 AI 重建、涂抹或猜字。
 
 ## 逐字转录与署名
 
@@ -23,4 +25,17 @@
 
 版权结论必须与实际使用范围匹配。工具不会判断公有领域、合理使用或许可是否适用；不要自行推定“名句都可以用”。没有网络/原作可供查证时，先使用有可靠证据的用户原创素材；无法确认的外部文字先不合成最终稿。
 
-`paper.rights` 是最小留证摘要，可用 `record_file` 指向调用者目录内的详细记录；脚本检查字段存在，执行者负责核实内容。不要把用户原作/照片与授权记录收集进通用 Skill 安装包。
+`paper.rights` 是最小留证摘要，可用 `record_file` 指向工作区详细记录；脚本检查字段存在，执行者负责核实内容。共享素材的提供记录不等同于文学原作或图像权利链已经核实，见 `assets/HANDCOPY-NOTICE.md`。不将调用者本次上传照片或私有运行记录收集进安装包。
+
+## 库内无合适手抄时：新文学片段
+
+1. 记录已比较的库内候选及不适合原因，例如情绪不符、文字内容不符或纸区无法完整提取。不要为了套字体而跳过真实手抄库。
+2. 从原作、作者或出版社等直接来源核实新片段。制作 `source-record.json`，字段为 `text`、`author`、`work`、`edition_or_locator`、`verified_by`、`verified_on`（ISO 日期）、`text_verified: true`、`author_verified: true`、`sources: [{title,url}]`、`rights: {basis,evidence}`。有译文时记录译者和译文依据。布尔值由真实查证后填写，脚本只验证结构，不能替执行者查证。
+3. 把原文完整存入 UTF-8 文本文件，运行：
+
+```bash
+python <skill>/scripts/render_excerpt.py --text-file excerpt.txt --author 作者 --source-record source-record.json --out new-excerpt-assets
+python <skill>/scripts/prepare.py --photo photo.jpg --library new-excerpt-assets --paper-id external-excerpt --out result-work-v1
+```
+
+字体随包分发，许可证见 `assets/fonts/OFL-LongCang.txt`。新页用 Pillow 排印，保留完整字与标点、作者和来源记录；页上标注“手写风排印”，`asset_kind` 为 `typeset-handwriting`、`production.is_real_handwriting` 为 `false`，不称作者亲笔。原有真实手抄不换字体。成品继续执行逐字、审美、像素与来源复核。

@@ -1,0 +1,13 @@
+{
+  "text": "由 Agent 填入经核实的完整文学片段；须与 text-file 逐字相同",
+  "author": "经核实的作者",
+  "work": "原作篇名与书名",
+  "edition_or_locator": "出版社、版本、页码或原文位置；译文须附译者",
+  "verified_by": "实际执行查证的 Agent 或核实者",
+  "verified_on": "YYYY-MM-DD",
+  "text_verified": false,
+  "author_verified": false,
+  "sources": [{"title": "直接支持原文与归属的来源", "url": "https://请替换为实际直接来源"}],
+  "rights": {"basis": "permission", "evidence": "实际适用的文本和译文使用依据；不能原样使用模板"},
+  "moods": ["经观察的照片情绪"]
+}

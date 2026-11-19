@@ -2,9 +2,11 @@
 
 可移植的本地合成流程。包含 Skill 指令、轻微日系胶片调色、四种布局的 Pillow 引擎、独立重算校验、使用示例和自测。无需 API Key、图像生成模型或网络服务；**查证外部文学出处/版权**时由执行者使用可用的检索渠道。
 
-本项目不附带任何私人照片或真实手抄图库，使用者自带素材。示例图完全由脚本绘制，标为测试图，不是真实生活照、真实手抄或文学摘句。包内测试图不是审美参考图库。
+**安装后只需上传生活照。** Skill 完整接入维护者提供的 **69 张参考素材**，先按照片情绪寻找真实手抄，保留原笔迹、文字、纸纹和落款；没有合适且完整可用的手抄，再查证外部文学片段与作者，制作同审美的手写风排印页。随后轻微胶片调色、合成并复核。使用者无需上传或配置手抄库、寻找字体或指定布局。
 
-[下载完整安装包 ZIP](https://github.com/pengyongqi229/life-photo-literary-collage/archive/refs/tags/v1.1.0.zip) · [查看发布版本](https://github.com/pengyongqi229/life-photo-literary-collage/releases) · [四种布局测试预览](examples/layout-preview.png)
+**原来的《参考图.zip》完整放在安装包内**，没有改动或删减，包含全部 69 张原参考图。首次使用由 Agent 自动解压到本地，按之前的方式选图、裁取真实手抄并合成。无需使用者另下素材或重新上传。调用者后来上传的生活照不加入安装包。图上署名按原样保留，出处与适用使用依据仍由执行 Agent 核对，详见 [共享素材说明](assets/HANDCOPY-NOTICE.md)。合成引擎的 `examples/demo/` 仍是明确标注的程序测试图，与真实手抄库分开。
+
+[下载完整安装包 ZIP](https://github.com/pengyongqi229/life-photo-literary-collage/archive/refs/heads/main.zip) · [查看最新版代码](https://github.com/pengyongqi229/life-photo-literary-collage) · [四种布局测试预览](examples/layout-preview.png)
 
 ## 从 GitHub 安装
 
@@ -36,6 +38,27 @@ python3 -m venv .venv
 Windows 对应使用 `py -3 -m venv .venv` 和 `.venv\Scripts\python.exe -m pip install -r requirements.txt`。后续的 `python` 均指此环境的解释器；也可先激活环境再执行。
 
 在其他支持目录式 Skill 的 Agent 中，把整个文件夹放入其技能目录；不支持 Skill 发现时可直接读 `SKILL.md` 并运行脚本。工具不依赖 Codex 专用 API。
+
+**旧版用户请更新一次完整 Skill。** 1.2.0 起包含完整 69 条参考索引、原始素材压缩包与外部文学补充分支；历史 1.1.0 安装包没有这些素材。
+
+## 日常使用：只上传生活照
+
+在支持 Skill 的 AI 工具里上传照片，说：
+
+> 用这个 Skill，把这张生活照拼成一页文学。
+
+Agent 会观察照片，先从完整 69 张库内素材中选文；没有合适的，再联网查证文学片段与作者并制作手写风排印页。文字与图片的出处核对由 Agent 执行。无需用户填写路径、编号、素材目录或布局；缺文件则由 Agent 修复安装。Python/Pillow 准备属于安装步骤。
+
+Agent 的单照片执行入口（在任意工作目录运行）：
+
+```bash
+python /path/to/life-photo-literary-collage/scripts/prepare.py --photo /path/to/photo.jpg --mood 安静,松弛 --out result-work-v1
+python /path/to/life-photo-literary-collage/scripts/verify.py result-work-v1/result --assets result-work-v1/assets
+```
+
+Agent 先运行 `scripts/library.py --out <工作区素材缓存>` 自动解压，随后用 `scripts/search_library.py --mood 情绪` 检索全部 69 条记录，并查看本地原参考图，按需裁取真实手抄；可用 `--paper-id` 明确选定，或由情绪标签排序。脚本不做视觉情绪识别，也不会把待查证的作者/出处自动标成已核实。像素检查通过后，仍需逐行目视与出处/使用依据复核，填写 `result/review.json`，再加 `--require-review` 运行严格校验。
+
+`--layout auto|vertical|horizontal|overlay|triptych`、`--box 左 上 右 下`、`--axis x|y`、`--split-at`、`--protected-json` 供 Agent 根据构图选择；不需要用户指定。`--no-grade` 关闭调色。完整自定义仍可沿用下方 `compose.py` 配方流程。库内没有合适手抄时，按 [选文规则](references/editorial.md) 查证外部片段，再用 `render_excerpt.py` 及随包字体制作手写风排印页；来源记录模板见 [examples/excerpt-source.template.json](examples/excerpt-source.template.json)。新效果页不能称真实手抄或作者亲笔。
 
 ## 默认的轻微胶片调色
 
@@ -71,9 +94,9 @@ python scripts/verify.py demo-results --assets demo-work/assets --require-review
 
 包内已附可直接运行的 `examples/demo/` 素材和四份配方，以及 [四种布局测试预览](examples/layout-preview.png)。可跳过生成器，直接将合成命令的配方路径改为 `examples/demo/recipes/overlay.json`、素材路径改为 `examples/demo/assets`。版本验证记录见 [VALIDATION.md](VALIDATION.md)。
 
-## 使用自己的素材
+## 可选：使用自己的手抄素材
 
-自行创建素材目录，示意如下（文件名可自由更改）：
+此节仅供用户另有自己的手抄时使用；默认只上传生活照并调用共享库即可。自定义目录示意如下：
 
 ```text
 my-materials/
@@ -122,6 +145,6 @@ python /path/to/life-photo-literary-collage/scripts/verify.py result-v1 --assets
 
 ## 打包与分享
 
-分享安装包时只包含 Skill 指令、脚本、模板和非私人测试素材。不要把自己的 `my-materials`、成品、`.venv`、缓存、API Key 或真实文学扫描件一起打包。包内代码和文档按 [LICENSE](LICENSE) 授权；不授予任何调用者输入素材、文学文本、译文或手抄图像的权利。
+分享安装包包含 Skill 指令、脚本、模板、测试夹具及维护者提供的原始《参考图.zip》和辅助索引。不要加入调用者的 `my-materials`、生活照、成品、`.venv`、缓存或 API Key，完整保留原参考素材包，不作预先删减。包内代码和文档按 [LICENSE](LICENSE) 授权；共享素材中的文学文本、译文和书写图像不自动适用 MIT，提供记录与核对要求见 [共享素材说明](assets/HANDCOPY-NOTICE.md)。
 
 详细规则：[轻微胶片调色](references/photo-look.md) · [选文与出处](references/editorial.md) · [布局与字段](references/layouts-and-config.md) · [质量检查](references/quality.md)。
